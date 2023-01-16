@@ -4,7 +4,7 @@ import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as FaceDetector from 'expo-face-detector';
 import Spinner from 'react-native-loading-spinner-overlay';
 
-export default function CameraApp({user,loading,success,faceDetectedCamEvent}) {
+export default function CameraApp({registerFaceView,user,loading,success,faceDetectedCamEvent}) {
   const [type, setType] = useState(CameraType.front);
   const [faceDetectedCam, setFaceDetacted] = useState(false);
 
@@ -70,7 +70,33 @@ export default function CameraApp({user,loading,success,faceDetectedCamEvent}) {
   return (
     
     <View style={styles.container}>
-      <Text style={{ backgroundColor: 'green', color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Face { faceDetectedCam?"detected":"lost"}</Text>
+      {registerFaceView?<><Text style={{ backgroundColor: 'green', color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Face { faceDetectedCam?"detected":"lost"}</Text>
+      {success ? <View><Text>Succees</Text></View> : <Camera style={styles.camera} type={type} onFacesDetected={(e) => { if (e.faces && e.faces.length > 0) { faceDetectedCamEvent({ available: true, data: e.faces }); setFaceDetacted(true) } else { faceDetectedCamEvent({ available: false, data: null }); setFaceDetacted(false) };}}
+        faceDetectorSettings={{
+      mode: FaceDetector.FaceDetectorMode.accurate,
+      detectLandmarks: FaceDetector.FaceDetectorLandmarks.all,
+      runClassifications: FaceDetector.FaceDetectorClassifications.all,
+      minDetectionInterval: 100,
+      tracking: true,
+    }}>
+        <View style={styles.buttonContainer}>
+          {/* <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
+            <Text style={styles.text}>Flip Camera</Text>
+                  </TouchableOpacity> */}
+                  
+                   <Spinner
+          //visibility of Overlay Loading Spinner
+          visible={loading}
+          //Text with the Spinner
+        
+          //Text style of the Spinner Text
+         
+        />
+              {faceDetectedCam?<TouchableOpacity style={styles.button}><View style={styles.submit2}><Text style={{ color: 'green', fontWeight: 'bold', fontSize: 13, }}>Register your face { user&&user.firstName?user.firstName:"admin"}</Text></View></TouchableOpacity>
+:<TouchableOpacity style={styles.button}><View style={styles.submit2}><Text style={{ color: 'green', fontWeight: 'bold', fontSize: 13, }}>We can't find you</Text></View></TouchableOpacity>
+}    
+        </View>
+      </Camera>}</>:<><Text style={{ backgroundColor: 'green', color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Face { faceDetectedCam?"detected":"lost"}</Text>
       {success ? <View><Text>Succees</Text></View> : <Camera style={styles.camera} type={type} onFacesDetected={(e) => { if (e.faces && e.faces.length > 0) { faceDetectedCamEvent({ available: true, data: e.faces }); setFaceDetacted(true) } else { faceDetectedCamEvent({ available: false, data: null }); setFaceDetacted(false) };}}
         faceDetectorSettings={{
       mode: FaceDetector.FaceDetectorMode.accurate,
@@ -96,7 +122,8 @@ export default function CameraApp({user,loading,success,faceDetectedCamEvent}) {
 :<TouchableOpacity style={styles.button}><View style={styles.submit2}><Text style={{ color: 'green', fontWeight: 'bold', fontSize: 13, }}>We can't find you</Text></View></TouchableOpacity>
 }    
         </View>
-      </Camera>}
+      </Camera>}</>}
+
    
     </View>
   );

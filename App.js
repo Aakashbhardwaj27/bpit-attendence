@@ -9,7 +9,8 @@ import axios from 'axios'
 import { Audio } from 'expo-av';
 export default function App() {
 
-  const [faceDataStore,setFaceDataStore]=useState([])
+  const [faceDataStore, setFaceDataStore] = useState([])
+  const [registerFaceView, setRegisterFaceView] = useState(false);
   const [sound, setSound] = useState();
   const [sounderr, setSounderr] =useState();
   const [connection, setConnection] = useState(false)
@@ -54,6 +55,32 @@ export default function App() {
    
    
   })
+  const registerFaceHandler = () => {
+    if (faceDetectedCam) {
+      let fdata = (faceDataStore[faceDataStore.length - 1][0])
+      console.log(JSON.stringify(fdata));
+      const body = { email: user.email, faceUser:fdata  }
+      console.log(body)
+      setLoading(true);
+      axios.post(`${server_url}/BSA/registerFace`,body )
+        .then((res) => {
+          if (res.data.status) {
+            setSuccess(true);
+            setLoading(false);
+  
+          } else {
+            throw new Error(res.data.message)
+          }
+          
+        }).catch(err => {
+          
+          setLoading(false);
+          alert(err||"Error | Could not register")
+      })
+    } else {
+      alert('Could not validate without face')
+    }
+  }
   const injectModel = () => {
      
     axios.post(`/BSA/fetchModelml`, { attendence: true, email: user.email })
@@ -120,8 +147,15 @@ export default function App() {
         const {message,loggedIn}=data||{}
           setUser(data);
           
-          alert(message);
+          
           setAuthenticated(loggedIn);
+          if (!res.data.isFaceAvailable) {
+            setRegisterFaceView(true);
+            alert('Your face is not registered,Please ask your admin to add your data.');
+
+          } else {
+            alert(message);
+          }
       }
     }).catch(err=>console.log(err))
     }
@@ -226,8 +260,8 @@ export default function App() {
           onPress={() => { handleExit()}}>
           <View style={styles.submit}><Text style={{ color: 'white', fontWeight: 'bold', fontSize: 19 }}>Mark Exit</Text></View></TouchableOpacity>
       </View> : <View>
-        <View style={styles.carbox}><CameraApp faceDetectedCamEvent={(e) => { handelStoreFace(e.data); setFaceDetacted(e.available) }} user={user} loading={loading} success={success} /></View>
-        <TouchableOpacity onPress={() => { handlleSumbit() }}><View style={styles.submit}><Text style={{ color: 'white', fontWeight: 'bold', fontSize: 19 }}>Mark Attendence</Text></View></TouchableOpacity>
+        <View style={styles.carbox}><CameraApp registerFaceView={registerFaceView} faceDetectedCamEvent={(e) => { handelStoreFace(e.data); setFaceDetacted(e.available) }} user={user} loading={loading} success={success} /></View>
+        {registerFaceView?<TouchableOpacity onPress={() => {registerFaceView?registerFaceHandler(): handlleSumbit() }}><View style={styles.submit}><Text style={{ color: 'white', fontWeight: 'bold', fontSize: 19 }}>Register Face</Text></View></TouchableOpacity>:<TouchableOpacity onPress={() => { handlleSumbit() }}><View style={styles.submit}><Text style={{ color: 'white', fontWeight: 'bold', fontSize: 19 }}>Mark Attendence</Text></View></TouchableOpacity>}
       </View>}
 
     </View>
