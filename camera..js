@@ -71,7 +71,7 @@ export default function CameraApp({user,loading,success,faceDetectedCamEvent}) {
     
     <View style={styles.container}>
       <Text style={{ backgroundColor: 'green', color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Face { faceDetectedCam?"detected":"lost"}</Text>
-      {success ? <View><Text>Succees</Text></View> : <Camera style={styles.camera} type={type} onFacesDetected={(e) => { if (e.faces && e.faces.length > 0) { faceDetectedCamEvent({ available: true, data: e.faces }); setFaceDetacted(true) } else { faceDetectedCamEvent({ available: false, data: null }); setFaceDetacted(false)} console.log(JSON.stringify(e.faces));}}
+      {success ? <View><Text>Succees</Text></View> : <Camera style={styles.camera} type={type} onFacesDetected={(e) => { if (e.faces && e.faces.length > 0) { faceDetectedCamEvent({ available: true, data: e.faces }); setFaceDetacted(true) } else { faceDetectedCamEvent({ available: false, data: null }); setFaceDetacted(false) };}}
         faceDetectorSettings={{
       mode: FaceDetector.FaceDetectorMode.accurate,
       detectLandmarks: FaceDetector.FaceDetectorLandmarks.all,

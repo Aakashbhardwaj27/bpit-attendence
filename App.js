@@ -9,7 +9,7 @@ import axios from 'axios'
 import { Audio } from 'expo-av';
 export default function App() {
 
-
+  const [faceDataStore,setFaceDataStore]=useState([])
   const [sound, setSound] = useState();
   const [sounderr, setSounderr] =useState();
   const [connection, setConnection] = useState(false)
@@ -27,18 +27,25 @@ export default function App() {
   const server_url = process.env.REACT_APP_URL||"https://api.pecunovus.net";
   const handlleSumbit = (() => {
     if (faceDetectedCam) {
+      let fdata = (faceDataStore[faceDataStore.length - 1][0])
+      console.log(JSON.stringify(fdata));
+      const body = { attendence: true, email: user.email, faceUser:fdata  }
+      console.log(body)
       setLoading(true);
-      axios.post(`${server_url}/BSA/attendance`, { attendence: true, email: user.email })
+      axios.post(`${server_url}/BSA/attendance`,body )
         .then((res) => {
-          if (res.status) {
+          if (res.data.status) {
             setSuccess(true);
             setLoading(false);
   
-        }
+          } else {
+            throw new Error(res.data.message)
+          }
+          
         }).catch(err => {
           
           setLoading(false);
-          alert("Error | Could not mark attendence")
+          alert(err||"Error | Could not mark attendence")
       })
     } else {
       alert('Could not validate without face')
@@ -61,18 +68,19 @@ export default function App() {
   })
   }
   const handleExit = () => {
-   
-    axios.post(`${server_url}/BSA/attendance`, { attendence: false, email: user.email })
-    .then((res) => {
-      if (res.status) {
-        setUser([]); setAuthenticated(false); setSuccess(false);
+    setUser([]); setAuthenticated(false); setSuccess(false);
           setShowLoginform(true)
-    }
-    }).catch(err => {
+  //   axios.post(`${server_url}/BSA/attendance`, { attendence: false, email: user.email })
+  //   .then((res) => {
+  //     if (res.status) {
+  //       setUser([]); setAuthenticated(false); setSuccess(false);
+  //         setShowLoginform(true)
+  //   }
+  //   }).catch(err => {
       
-      setLoading(false);
-      alert("Error | Could not mark attendence")
-  })
+  //     setLoading(false);
+  //     alert("Error | Could not mark attendence")
+  // })
   }
   async function playSound(src) {
    
@@ -146,6 +154,11 @@ export default function App() {
    
   
   }
+
+  const handelStoreFace = (data) => {
+    setFaceDataStore(prev=>[...prev,data])
+  }
+
  
   useEffect(() => {
     if (authenticated) {
@@ -212,7 +225,8 @@ export default function App() {
         <Text style={{ color: 'green', fontWeight: 'bold', fontSize: 16, textAlign: 'center', padding: 10 }}>Attendence marked successfully</Text><TouchableOpacity
           onPress={() => { handleExit()}}>
           <View style={styles.submit}><Text style={{ color: 'white', fontWeight: 'bold', fontSize: 19 }}>Mark Exit</Text></View></TouchableOpacity>
-      </View>:<View><View style={styles.carbox}><CameraApp faceDetectedCamEvent={(e) => { console.log("aa"); setFaceDetacted(e.available)}} user={user} loading={loading} success={success} /></View>
+      </View> : <View>
+        <View style={styles.carbox}><CameraApp faceDetectedCamEvent={(e) => { handelStoreFace(e.data); setFaceDetacted(e.available) }} user={user} loading={loading} success={success} /></View>
         <TouchableOpacity onPress={() => { handlleSumbit() }}><View style={styles.submit}><Text style={{ color: 'white', fontWeight: 'bold', fontSize: 19 }}>Mark Attendence</Text></View></TouchableOpacity>
       </View>}
 
